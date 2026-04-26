@@ -13,6 +13,7 @@ extension Insecure {
 extension Insecure.RSA {
     public final class PublicKey: NIOSSHPublicKeyProtocol {
         public static let publicKeyPrefix = "ssh-rsa"
+        public static let algorithmName = "rsa-sha2-256"
         public static let keyExchangeAlgorithms = ["diffie-hellman-group1-sha1", "diffie-hellman-group14-sha1"]
         
         // PublicExponent e
@@ -138,7 +139,7 @@ extension Insecure.RSA {
     }
     
     public struct Signature: ContiguousBytes, NIOSSHSignatureProtocol {
-        public static let signaturePrefix = "ssh-rsa"
+        public static let signaturePrefix = "rsa-sha2-256"
         
         public let rawRepresentation: Data
         
@@ -230,12 +231,12 @@ extension Insecure.RSA {
                 throw CitadelError.signingError
             }
             
-            let hash = Array(Insecure.SHA1.hash(data: message))
+            let hash = Array(SHA256.hash(data: Data(message)))
             let out = UnsafeMutablePointer<UInt8>.allocate(capacity: 4096)
             defer { out.deallocate() }
             var outLength: UInt32 = 4096
             let result = CCryptoBoringSSL_RSA_sign(
-                NID_sha1,
+                NID_sha256,
                 hash,
                 Int(hash.count),
                 out,
