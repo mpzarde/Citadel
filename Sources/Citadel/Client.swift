@@ -1,7 +1,7 @@
-@_exported import NIO
+import NIO
 import Crypto
 import Logging
-@_exported import NIOSSH
+import NIOSSH
 
 extension SSHAlgorithms.Modification<NIOSSHTransportProtection.Type> {
     func apply(to configuration: inout [any NIOSSHTransportProtection.Type]) {

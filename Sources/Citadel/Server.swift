@@ -289,6 +289,26 @@ public final class SSHServer {
         try await channel.close()
     }
     
+    /// Starts a throw-away SSH server on `host:port` that accepts any public-key
+    /// authentication attempt. Intended for use in tests — callers need no NIOSSH imports.
+    public static func hostAcceptingAllPublicKeys(
+        host: String = "localhost",
+        port: Int
+    ) async throws -> SSHServer {
+        final class AcceptAllDelegate: NIOSSHServerUserAuthenticationDelegate, @unchecked Sendable {
+            let supportedAuthenticationMethods: NIOSSHAvailableUserAuthenticationMethods = .publicKey
+            func requestReceived(request: NIOSSHUserAuthenticationRequest, responsePromise: EventLoopPromise<NIOSSHUserAuthenticationOutcome>) {
+                responsePromise.succeed(.success)
+            }
+        }
+        return try await self.host(
+            host: host,
+            port: port,
+            hostKeys: [NIOSSHPrivateKey(p256Key: .init())],
+            authenticationDelegate: AcceptAllDelegate()
+        )
+    }
+
     /// Starts a new SSH Server on the specified host and port.
     public static func host(
         host: String,
