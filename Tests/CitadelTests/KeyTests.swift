@@ -329,4 +329,138 @@ final class KeyTests: XCTestCase {
         let ecdsa521KeyType = try SSHKeyDetection.detectPrivateKeyType(from: ecdsa521PrivateKey)
         XCTAssertEqual(ecdsa521KeyType, .ecdsaP521)
     }
+
+    // MARK: - ECDSA private key parsing
+
+    func testECDSAP256PrivateKey() throws {
+        let key = """
+        -----BEGIN OPENSSH PRIVATE KEY-----
+        b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAaAAAABNlY2RzYS
+        1zaGEyLW5pc3RwMjU2AAAACG5pc3RwMjU2AAAAQQQ1jn4g7f7CgGEu3Vkex78EhfgJzDOx
+        J8B91bgen7RLF12lRrLpxIjPVPxMOql2RVnIBMo+39qIsnOg1gkb+YEJAAAAqEKmecNCpn
+        nDAAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBDWOfiDt/sKAYS7d
+        WR7HvwSF+AnMM7EnwH3VuB6ftEsXXaVGsunEiM9U/Ew6qXZFWcgEyj7f2oiyc6DWCRv5gQ
+        kAAAAhAMRSp1mAM3bxNFiPfRp3MtfU5X1cP9uVSrgJ7Jh56yAwAAAADW1wemFyZGVAbWJh
+        MTUBAg==
+        -----END OPENSSH PRIVATE KEY-----
+        """
+        let privateKey = try P256.Signing.PrivateKey(sshEcdsa: key)
+        let message = Data("shazbot test".utf8)
+        let sig = try privateKey.signature(for: message)
+        XCTAssertTrue(privateKey.publicKey.isValidSignature(sig, for: message))
+    }
+
+    func testECDSAP384PrivateKey() throws {
+        let key = """
+        -----BEGIN OPENSSH PRIVATE KEY-----
+        b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAiAAAABNlY2RzYS
+        1zaGEyLW5pc3RwMzg0AAAACG5pc3RwMzg0AAAAYQSNqv5KqsIc2AcDk00rfnbarXYhvIDa
+        HKkCgMPiJo6+zVsoj1YKihatXgodEAUVNz4rFkm8srLT10CCOb2G5jO5X8bm0VBQFDKrHk
+        MP8B7dCMUSv3pJBaI2BcbKSoaBFXUAAADYK8r8NivK/DYAAAATZWNkc2Etc2hhMi1uaXN0
+        cDM4NAAAAAhuaXN0cDM4NAAAAGEEjar+SqrCHNgHA5NNK3522q12IbyA2hypAoDD4iaOvs
+        1bKI9WCooWrV4KHRAFFTc+KxZJvLKy09dAgjm9huYzuV/G5tFQUBQyqx5DD/Ae3QjFEr96
+        SQWiNgXGykqGgRV1AAAAMQCOlX7iRh/z1KUT+6aYZSeF3DzUeMJIhZcioLv3dIq+WtxeY+
+        fckK94IySTqX488ksAAAANbXB6YXJkZUBtYmExNQEC
+        -----END OPENSSH PRIVATE KEY-----
+        """
+        let privateKey = try P384.Signing.PrivateKey(sshEcdsa: key)
+        let message = Data("shazbot test".utf8)
+        let sig = try privateKey.signature(for: message)
+        XCTAssertTrue(privateKey.publicKey.isValidSignature(sig, for: message))
+    }
+
+    func testECDSAP521PrivateKey() throws {
+        let key = """
+        -----BEGIN OPENSSH PRIVATE KEY-----
+        b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAArAAAABNlY2RzYS
+        1zaGEyLW5pc3RwNTIxAAAACG5pc3RwNTIxAAAAhQQAml2CpKSt3wyqxqerP7ibP2lRm7/d
+        kZLemujcuLFtomIAC7laI+uIo0Nz6YMM2JjJhF5yfwyJh5lOmcqYUKadzwUB9pRFK4DN6k
+        1CLl/RTWlsfC6MAkKnFTUTWb5zQQFkXt2FhWEPD4AuzNT2jdjsu77xyCwaKNG7kBT1y4k6
+        Bb6HK84AAAEQZCdJ+mQnSfoAAAATZWNkc2Etc2hhMi1uaXN0cDUyMQAAAAhuaXN0cDUyMQ
+        AAAIUEAJpdgqSkrd8Mqsanqz+4mz9pUZu/3ZGS3pro3LixbaJiAAu5WiPriKNDc+mDDNiY
+        yYRecn8MiYeZTpnKmFCmnc8FAfaURSuAzepNQi5f0U1pbHwujAJCpxU1E1m+c0EBZF7dhY
+        VhDw+ALszU9o3Y7Lu+8cgsGijRu5AU9cuJOgW+hyvOAAAAQgGJLaSolbrOS1v9KQYpLOTK
+        nN61sk3BAX44h0qy2/KcZxHiz45o4H5klaCMkrZWja3zbXfKROFjlRYEtrMEatJJHgAAAA
+        1tcHphcmRlQG1iYTE1AQIDBAU=
+        -----END OPENSSH PRIVATE KEY-----
+        """
+        let privateKey = try P521.Signing.PrivateKey(sshEcdsa: key)
+        let message = Data("shazbot test".utf8)
+        let sig = try privateKey.signature(for: message)
+        XCTAssertTrue(privateKey.publicKey.isValidSignature(sig, for: message))
+    }
+
+    func testEncryptedECDSAP256PrivateKey() throws {
+        let key = """
+        -----BEGIN OPENSSH PRIVATE KEY-----
+        b3BlbnNzaC1rZXktdjEAAAAACmFlczI1Ni1jdHIAAAAGYmNyeXB0AAAAGAAAABCCWHYqAW
+        y38FW5dz/JLEJIAAAAGAAAAAEAAABoAAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlz
+        dHAyNTYAAABBBA94PCRsnnWi79qPedt+Umye34mIGMwmiS/8rJV3++jt28QaVZP9a7HH1t
+        BCu+vvk0w59yv+CnQbMrAIvfPhxMEAAACw/ma1cYhjT1K2gb/YLKLlF4o4mNsebmtIYA1y
+        G/ZszxelRjLsBx84QBGrO4P9y3f4bSqOq+Spl5Q95Z/aqF5iVm684QWvHCtP7OdC0YNiFX
+        Vej4MkfrNWX8enlaDI5Dkp25e3mQIvrVHyT2QIe0iVzj20jPVKaUZ73HzKktZDQOED22No
+        3fq44ajtEOiQMtL7SdnQyv4m8ZjMTLZQmyYd1SqA43lfdrFvumuPecVlqsU=
+        -----END OPENSSH PRIVATE KEY-----
+        """
+        let passphrase = "testpassword".data(using: .utf8)!
+
+        let privateKey = try P256.Signing.PrivateKey(sshEcdsa: key, decryptionKey: passphrase)
+        let message = Data("shazbot test".utf8)
+        let sig = try privateKey.signature(for: message)
+        XCTAssertTrue(privateKey.publicKey.isValidSignature(sig, for: message))
+
+        XCTAssertThrowsError(try P256.Signing.PrivateKey(sshEcdsa: key, decryptionKey: "wrongpassword".data(using: .utf8)!))
+        XCTAssertThrowsError(try P256.Signing.PrivateKey(sshEcdsa: key))
+    }
+
+    func testEncryptedECDSAP384PrivateKey() throws {
+        let key = """
+        -----BEGIN OPENSSH PRIVATE KEY-----
+        b3BlbnNzaC1rZXktdjEAAAAACmFlczI1Ni1jdHIAAAAGYmNyeXB0AAAAGAAAABDc8ediCc
+        e+BWgOYu2H5ZdcAAAAGAAAAAEAAACIAAAAE2VjZHNhLXNoYTItbmlzdHAzODQAAAAIbmlz
+        dHAzODQAAABhBH3rc4eOSjKSkrx4HDm7xNpwra/dYV9SjZI/HSdEvU+HDCy9ysWu7HTuko
+        PMoX9SwXa/B5ODjjTloGxkxVu85gNzZ53Sj985vSPpvx0heukJjycztMNwgboqVE2UZBD1
+        +gAAAOAnRBNMwCojG3ShKOL3MEx3V0uky7eeD95E1YtVhY4LNKO8t7QM4Cs/BiSjKik2IE
+        d9jW26ru4PoU6TK1Eyp6XhyE7a28AZIvWQY85kEfME019mFcwr2vaS4e4rclBSBWF1n7xu
+        CD3JiOZH1+/Xy073mzCXM8H6z6K4bIs03gEdOyemf/wtdHFf7HFSMjvLEyk7ttdUyZxBvh
+        92uHZE3ra7AHyBKpEw3ZTFzESh+a1QVJPj7ZN5WVgCSq4Book72W4e+gpcgldmODR0RNJ1
+        FSJM2sb4hhpNslT35ju00/VuEg==
+        -----END OPENSSH PRIVATE KEY-----
+        """
+        let passphrase = "testpassword".data(using: .utf8)!
+
+        let privateKey = try P384.Signing.PrivateKey(sshEcdsa: key, decryptionKey: passphrase)
+        let message = Data("shazbot test".utf8)
+        let sig = try privateKey.signature(for: message)
+        XCTAssertTrue(privateKey.publicKey.isValidSignature(sig, for: message))
+
+        XCTAssertThrowsError(try P384.Signing.PrivateKey(sshEcdsa: key, decryptionKey: "wrongpassword".data(using: .utf8)!))
+        XCTAssertThrowsError(try P384.Signing.PrivateKey(sshEcdsa: key))
+    }
+
+    func testEncryptedECDSAP521PrivateKey() throws {
+        let key = """
+        -----BEGIN OPENSSH PRIVATE KEY-----
+        b3BlbnNzaC1rZXktdjEAAAAACmFlczI1Ni1jdHIAAAAGYmNyeXB0AAAAGAAAABC/2m1sBv
+        QKdNZrGE9Dz8faAAAAGAAAAAEAAACsAAAAE2VjZHNhLXNoYTItbmlzdHA1MjEAAAAIbmlz
+        dHA1MjEAAACFBAClZ2mhtO0xizuZLOiJ2nX7Xh2PiiwQ+0Md+86PxcQYFB384p/52y8swR
+        1+jVFMnpTyDfA4fnWvFqYIREgUeUHWdAGRjwIVxB4OBEisSy+Mu4oO+3KCRb54ObrRIb2T
+        Ewckln284C80DcwbdewWyzcHK+CL23k1NAIY36swVlLu0M4MwAAAARD8zrvv/dccWcfdHl
+        DEryK/ay2slXuFjkwHR/PPU/Yv/1gnO4i3olemhZQEKiYJSQWa4aMLUmQ5WoRq6cTns1od
+        0mk5/q4GwAsOBi72AqPqr4Zh7Ph++CbUG0IKEGKeIwyh8GunXwWLBv0Oko45CpfgAIZOpr
+        DRP4u+hiWW+Ca7WeeuUZYOxL8cNF5CH7x7qdwvmXCySbBXz5QVjsy5dOQJwirRqa+hWgoD
+        za8OMc0K8sjjYIoRxCPfnqLCjmC5+7zxTZgDyJAsW4i4nJ15H4rJx+f99ymtdlXEzBiaNx
+        iO+T0Dnmt4KukriZW7ytmPIOIMH6NhORgPdLOSsO6fyCfkYWv1Mf9xGPdSOehTEkR6nQ==
+        -----END OPENSSH PRIVATE KEY-----
+        """
+        let passphrase = "testpassword".data(using: .utf8)!
+
+        let privateKey = try P521.Signing.PrivateKey(sshEcdsa: key, decryptionKey: passphrase)
+        let message = Data("shazbot test".utf8)
+        let sig = try privateKey.signature(for: message)
+        XCTAssertTrue(privateKey.publicKey.isValidSignature(sig, for: message))
+
+        XCTAssertThrowsError(try P521.Signing.PrivateKey(sshEcdsa: key, decryptionKey: "wrongpassword".data(using: .utf8)!))
+        XCTAssertThrowsError(try P521.Signing.PrivateKey(sshEcdsa: key))
+    }
 }
