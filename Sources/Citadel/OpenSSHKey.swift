@@ -138,6 +138,117 @@ extension Curve25519.Signing.PrivateKey: ByteBufferConvertible {
     }
 }
 
+// MARK: - ECDSA P-256
+
+extension P256.Signing.PublicKey: ByteBufferConvertible {
+    static func read(consuming buffer: inout ByteBuffer) throws -> P256.Signing.PublicKey {
+        guard buffer.readSSHString() != nil else { throw InvalidOpenSSHKey.invalidLayout }
+        guard var pointBuffer = buffer.readSSHBuffer(),
+              let pointBytes = pointBuffer.readBytes(length: pointBuffer.readableBytes)
+        else { throw InvalidOpenSSHKey.missingPublicKeyBuffer }
+        return try P256.Signing.PublicKey(x963Representation: pointBytes)
+    }
+    func write(to buffer: inout ByteBuffer) -> Int { 0 }
+}
+
+extension P256.Signing.PrivateKey: OpenSSHPrivateKey {
+    static var privateKeyPrefix: String { "ecdsa-sha2-nistp256" }
+    static var publicKeyPrefix: String { "ecdsa-sha2-nistp256" }
+    static var keyType: OpenSSH.KeyType { .ecdsaP256 }
+    public typealias PublicKey = P256.Signing.PublicKey
+
+    static func read(consuming buffer: inout ByteBuffer) throws -> P256.Signing.PrivateKey {
+        guard buffer.readSSHString() != nil else { throw InvalidOpenSSHKey.invalidLayout }
+        guard buffer.readSSHBuffer() != nil else { throw InvalidOpenSSHKey.missingPublicKeyBuffer }
+        guard var scalarBuf = buffer.readSSHBuffer(),
+              var bytes = scalarBuf.readBytes(length: scalarBuf.readableBytes)
+        else { throw InvalidOpenSSHKey.missingPrivateKeyBuffer }
+        if bytes.first == 0x00 { bytes.removeFirst() }
+        return try P256.Signing.PrivateKey(rawRepresentation: bytes)
+    }
+    func write(to buffer: inout ByteBuffer) -> Int { 0 }
+}
+
+extension P256.Signing.PrivateKey {
+    public init(sshEcdsa key: String, decryptionKey: Data? = nil) throws {
+        self = try OpenSSH.PrivateKey<P256.Signing.PrivateKey>(string: key, decryptionKey: decryptionKey).privateKey
+    }
+}
+
+// MARK: - ECDSA P-384
+
+extension P384.Signing.PublicKey: ByteBufferConvertible {
+    static func read(consuming buffer: inout ByteBuffer) throws -> P384.Signing.PublicKey {
+        guard buffer.readSSHString() != nil else { throw InvalidOpenSSHKey.invalidLayout }
+        guard var pointBuffer = buffer.readSSHBuffer(),
+              let pointBytes = pointBuffer.readBytes(length: pointBuffer.readableBytes)
+        else { throw InvalidOpenSSHKey.missingPublicKeyBuffer }
+        return try P384.Signing.PublicKey(x963Representation: pointBytes)
+    }
+    func write(to buffer: inout ByteBuffer) -> Int { 0 }
+}
+
+extension P384.Signing.PrivateKey: OpenSSHPrivateKey {
+    static var privateKeyPrefix: String { "ecdsa-sha2-nistp384" }
+    static var publicKeyPrefix: String { "ecdsa-sha2-nistp384" }
+    static var keyType: OpenSSH.KeyType { .ecdsaP384 }
+    public typealias PublicKey = P384.Signing.PublicKey
+
+    static func read(consuming buffer: inout ByteBuffer) throws -> P384.Signing.PrivateKey {
+        guard buffer.readSSHString() != nil else { throw InvalidOpenSSHKey.invalidLayout }
+        guard buffer.readSSHBuffer() != nil else { throw InvalidOpenSSHKey.missingPublicKeyBuffer }
+        guard var scalarBuf = buffer.readSSHBuffer(),
+              var bytes = scalarBuf.readBytes(length: scalarBuf.readableBytes)
+        else { throw InvalidOpenSSHKey.missingPrivateKeyBuffer }
+        if bytes.first == 0x00 { bytes.removeFirst() }
+        return try P384.Signing.PrivateKey(rawRepresentation: bytes)
+    }
+    func write(to buffer: inout ByteBuffer) -> Int { 0 }
+}
+
+extension P384.Signing.PrivateKey {
+    public init(sshEcdsa key: String, decryptionKey: Data? = nil) throws {
+        self = try OpenSSH.PrivateKey<P384.Signing.PrivateKey>(string: key, decryptionKey: decryptionKey).privateKey
+    }
+}
+
+// MARK: - ECDSA P-521
+
+extension P521.Signing.PublicKey: ByteBufferConvertible {
+    static func read(consuming buffer: inout ByteBuffer) throws -> P521.Signing.PublicKey {
+        guard buffer.readSSHString() != nil else { throw InvalidOpenSSHKey.invalidLayout }
+        guard var pointBuffer = buffer.readSSHBuffer(),
+              let pointBytes = pointBuffer.readBytes(length: pointBuffer.readableBytes)
+        else { throw InvalidOpenSSHKey.missingPublicKeyBuffer }
+        return try P521.Signing.PublicKey(x963Representation: pointBytes)
+    }
+    func write(to buffer: inout ByteBuffer) -> Int { 0 }
+}
+
+extension P521.Signing.PrivateKey: OpenSSHPrivateKey {
+    static var privateKeyPrefix: String { "ecdsa-sha2-nistp521" }
+    static var publicKeyPrefix: String { "ecdsa-sha2-nistp521" }
+    static var keyType: OpenSSH.KeyType { .ecdsaP521 }
+    public typealias PublicKey = P521.Signing.PublicKey
+
+    static func read(consuming buffer: inout ByteBuffer) throws -> P521.Signing.PrivateKey {
+        guard buffer.readSSHString() != nil else { throw InvalidOpenSSHKey.invalidLayout }
+        guard buffer.readSSHBuffer() != nil else { throw InvalidOpenSSHKey.missingPublicKeyBuffer }
+        guard var scalarBuf = buffer.readSSHBuffer(),
+              var bytes = scalarBuf.readBytes(length: scalarBuf.readableBytes)
+        else { throw InvalidOpenSSHKey.missingPrivateKeyBuffer }
+        if bytes.first == 0x00 { bytes.removeFirst() }
+        return try P521.Signing.PrivateKey(rawRepresentation: bytes)
+    }
+    func write(to buffer: inout ByteBuffer) -> Int { 0 }
+}
+
+extension P521.Signing.PrivateKey {
+    public init(sshEcdsa key: String, decryptionKey: Data? = nil) throws {
+        self = try OpenSSH.PrivateKey<P521.Signing.PrivateKey>(string: key, decryptionKey: decryptionKey).privateKey
+    }
+}
+
 extension ByteBuffer {
     mutating func decryptAES(
         cipher: OpaquePointer,
@@ -287,6 +398,9 @@ enum OpenSSH {
     enum KeyType: String {
         case sshRSA = "ssh-rsa"
         case sshED25519 = "ssh-ed25519"
+        case ecdsaP256 = "ecdsa-sha2-nistp256"
+        case ecdsaP384 = "ecdsa-sha2-nistp384"
+        case ecdsaP521 = "ecdsa-sha2-nistp521"
     }
     
     struct PrivateKey<SSHKey: OpenSSHPrivateKey> {
